@@ -3,6 +3,7 @@ from settings import *
 import random
 import time
 import math
+import numpy as np
 
 
 def draw_background():
@@ -76,14 +77,67 @@ def update_grid():
             draw_square(row, col)
 
 def move_up():
-    for col in range(size-1):
+    for col in range(size):
         for row in range(size-1,-1,-1):
-            if(row-1>0 and (cells[row-1][col]==cells[row][col] or cells[row-1][col]==0)):
+            if(row-1>=0 and (cells[row-1][col]==cells[row][col] or cells[row-1][col]==0)):
                 cells[row-1][col]=cells[row-1][col]+cells[row][col]
                 cells[row][col]=0
+        for row in range(size-1,-1,-1):
+            if cells[row][col]==0:
+                for j in range(0,size-row-1):
+                    temp=cells[row+j][col]
+                    cells[row+j][col]=cells[row+j+1][col]
+                    cells[row+j+1][col]=temp
+
     update_grid()
 
+def move_down():
+    for col in range(size):
+        for row in range(size):
+            if(row+1<size and (cells[row+1][col]==cells[row][col] or cells[row+1][col]==0)):
+                cells[row+1][col]=cells[row+1][col]+cells[row][col]
+                cells[row][col]=0
+        for row in range(size):
+            if cells[row][col]==0:
+                for j in range(row,size-1):
+                    temp=cells[j][col]
+                    cells[j][col]=cells[j+1][col]
+                    cells[j+1][col]=temp
+#TODO: FIX THIS AND OTHERS
+    update_grid()   
 
+def move_right():
+    for row in range(size):
+        for col in range(size):
+            if(col+1<size and (cells[row][col+1]==cells[row][col] or cells[row][col+1]==0)):
+                cells[row][col+1]=cells[row][col+1]+cells[row][col]
+                cells[row][col]=0
+
+
+
+
+        for col in range(size):
+            if cells[row][col]==0:
+                for j in range(col):
+                    temp=cells[row][j]
+                    cells[row][j]=cells[row][j+1]
+                    cells[row][j+1]=temp
+    update_grid()   
+
+def move_left():
+    for row in range(size):
+        for col in range(size-1,-1,-1):
+            if(col-1>=0 and (cells[row][col-1]==cells[row][col] or cells[row][col-1]==0)):
+                cells[row][col-1]=cells[row][col-1]+cells[row][col]
+                cells[row][col]=0
+        for col in range(size-1,-1,-1):
+            if cells[row][col]==0:
+                for j in range(col,0,-1):
+                    temp=cells[row][j]
+                    cells[row][j]=cells[row][j-1]
+                    cells[row][j-1]=temp
+
+    update_grid()   
 
 
 
@@ -168,10 +222,13 @@ if __name__=='__main__':
                     move_up()
                 if event.key == pygame.K_RIGHT:
                     print("right")
+                    move_right()
                 if event.key == pygame.K_DOWN:
                     print("down")
+                    move_down()
                 if event.key == pygame.K_LEFT:
                     print("left")
+                    move_left()
         pygame.display.flip()
         clock.tick(30)
     pygame.quit()
