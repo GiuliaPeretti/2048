@@ -2,6 +2,7 @@ import pygame
 from settings import *
 import random
 import time
+import math
 
 
 def draw_background():
@@ -52,16 +53,37 @@ def draw_grid():
         pygame.draw.line(screen, WHITE, (i,20),(i,580), 2)
         pygame.draw.line(screen, WHITE, (20,i),(580,i), 2)
 
-def draw_square(x,y):
-    print(x,y)
-    col=(x-20)//cell_width
-    row=(y-20)//cell_width
-    print(row,col)
-    x=(col*cell_width)+20+(cell_width//10)
-    y=(row*cell_width)+20+(cell_width//10)
-    w=cell_width-(2*cell_width/10)
-    print(x,y)
-    pygame.draw.rect(screen, RED, (x,y,w,w))
+    for i in range(0,len(COLORS)):
+        pygame.draw.rect(screen, COLORS[i], (10*i,0,10,10))
+
+def draw_square(row,col):
+    x=(col*cell_width)+20+10
+    y=(row*cell_width)+20+10
+    w=cell_width-18
+    pygame.draw.rect(screen, COLORS[int(math.sqrt(cells[row][col]))], (x,y,w,w))
+
+def start_the_game():
+    for i in range(3):
+        row=random.randint(0,size-1)
+        col=random.randint(0,size-1)
+        cells[row][col]=2
+    update_grid()
+
+
+def update_grid():
+    for row in range(0,size):
+        for col in range(0,size):
+            draw_square(row, col)
+
+def move_up():
+    for col in range(size-1):
+        for row in range(size-1,-1,-1):
+            if(row-1>0 and (cells[row-1][col]==cells[row][col] or cells[row-1][col]==0)):
+                cells[row-1][col]=cells[row-1][col]+cells[row][col]
+                cells[row][col]=0
+    update_grid()
+
+
 
 
 
@@ -95,6 +117,7 @@ if __name__=='__main__':
     size=1
     selected_game=-1
     game_started=False
+    grid=None
     draw_background()
     buttons=gen_buttons()
     draw_buttons()
@@ -114,32 +137,41 @@ if __name__=='__main__':
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x,y=pygame.mouse.get_pos()
-                if x>=20 and x<=560 and y>=20 and y<=560:
-                    draw_square(x,y)
-                else:
-                    for i in range (len(buttons)):
-                        if(x>=buttons[i]['coordinates'][0] and x<=buttons[i]['coordinates'][0]+buttons[i]['coordinates'][2] and y>=buttons[i]['coordinates'][1] and y<=buttons[i]['coordinates'][1]+buttons[i]['coordinates'][3]):
-                            if(i<len(buttons)-1):
-                                selected=i
-                                if(not(game_started)):
-                                    select_game=selected
+                for i in range (len(buttons)):
+                    if(x>=buttons[i]['coordinates'][0] and x<=buttons[i]['coordinates'][0]+buttons[i]['coordinates'][2] and y>=buttons[i]['coordinates'][1] and y<=buttons[i]['coordinates'][1]+buttons[i]['coordinates'][3]):
+                        if(i<len(buttons)-1):
+                            selected=i
+                            if(not(game_started)):
+                                select_game=selected
+                            draw_buttons()
+                            break
+                        elif(i==4):
+                            if(selected!=-1):
+                                pygame.draw.rect(screen, BACKGROUND_COLOR, (640,490,100,100))   
+                                select_game=selected
+                                win=False
+                                loose=False
+                                game_started=True
+                                cell_width, size=get_cell_size()
+                                cells=init_cell(size)
+                                draw_grid()
                                 draw_buttons()
-                                break
-                            elif(i==4):
-                                if(selected!=-1):
-                                    pygame.draw.rect(screen, BACKGROUND_COLOR, (640,490,100,100))   
-                                    select_game=selected
-                                    win=False
-                                    loose=False
-                                    game_started=True
-                                    cell_width, size=get_cell_size()
-                                    cells=init_cell(size)
-                                    draw_grid()
-                                    draw_buttons()
-                                break
-                    else:
-                        selected=-1
+                                start_the_game()
+
+                            break
+                else:
+                    selected=-1
                 draw_buttons()
+            if (event.type == pygame.KEYDOWN):
+                if event.key == pygame.K_UP:
+                    print("up")
+                    move_up()
+                if event.key == pygame.K_RIGHT:
+                    print("right")
+                if event.key == pygame.K_DOWN:
+                    print("down")
+                if event.key == pygame.K_LEFT:
+                    print("left")
         pygame.display.flip()
         clock.tick(30)
     pygame.quit()
