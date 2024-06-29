@@ -55,13 +55,17 @@ def draw_grid():
         pygame.draw.line(screen, WHITE, (20,i),(580,i), 2)
 
     for i in range(0,len(COLORS)):
-        pygame.draw.rect(screen, COLORS[i], (10*i,0,10,10))
+        pygame.draw.rect(screen, COLORS[i]['color'], (10*i,0,10,10))
 
 def draw_square(row,col):
     x=(col*cell_width)+20+10
     y=(row*cell_width)+20+10
     w=cell_width-18
-    pygame.draw.rect(screen, COLORS[int(math.sqrt(cells[row][col]))], (x,y,w,w))
+    for i in COLORS:
+        if i['n']==cells[row][col]:
+            color=i['color']
+            break
+    pygame.draw.rect(screen, color, (x,y,w,w))
 
 def start_the_game():
     for i in range(3):
@@ -69,7 +73,6 @@ def start_the_game():
         col=random.randint(0,size-1)
         cells[row][col]=2
     update_grid()
-
 
 def update_grid():
     for row in range(0,size):
@@ -99,11 +102,10 @@ def move_down():
                 cells[row][col]=0
         for row in range(size):
             if cells[row][col]==0:
-                for j in range(row,size-1):
+                for j in range(row, 0,-1):
                     temp=cells[j][col]
-                    cells[j][col]=cells[j+1][col]
-                    cells[j+1][col]=temp
-#TODO: FIX THIS AND OTHERS
+                    cells[j][col]=cells[j-1][col]
+                    cells[j-1][col]=temp
     update_grid()   
 
 def move_right():
@@ -112,16 +114,12 @@ def move_right():
             if(col+1<size and (cells[row][col+1]==cells[row][col] or cells[row][col+1]==0)):
                 cells[row][col+1]=cells[row][col+1]+cells[row][col]
                 cells[row][col]=0
-
-
-
-
         for col in range(size):
             if cells[row][col]==0:
-                for j in range(col):
+                for j in range(col, 0,-1):
                     temp=cells[row][j]
-                    cells[row][j]=cells[row][j+1]
-                    cells[row][j+1]=temp
+                    cells[row][j]=cells[row][j-1]
+                    cells[row][j-1]=temp
     update_grid()   
 
 def move_left():
@@ -132,16 +130,30 @@ def move_left():
                 cells[row][col]=0
         for col in range(size-1,-1,-1):
             if cells[row][col]==0:
-                for j in range(col,0,-1):
-                    temp=cells[row][j]
-                    cells[row][j]=cells[row][j-1]
-                    cells[row][j-1]=temp
+                for j in range(0,size-col-1):
+                    temp=cells[row][col+j]
+                    cells[row][col+j]=cells[row][col+j+1]
+                    cells[row][col+j+1]=temp
 
     update_grid()   
 
+def add_cells():
+    n=random.randint(0,3)
+    valid=cell_empty()
+    c=0
+    while(c<n and len(valid)!=0):
+        choice=random.choice(valid)
+        cells[choice[0]][choice[1]]=2
+        c+=1
+    update_grid()
 
-
-
+def cell_empty():
+    valid=[]
+    for row in range(size):
+        for col in range(size):
+            if cells[row][col]==0:
+                valid.append((row,col))
+    return valid
 
 def get_cell_size():
     match select_game:
@@ -154,6 +166,17 @@ def get_cell_size():
         case 3:
             return(70, 560//70)
 
+def possible_moves():
+    for row in cells:
+        if 0 in row:
+            return True
+    for row in range(size-1):
+        for col in range(size-1):
+            if grid[row][col]==grid[row][col+1]:
+                return True
+            if grid[row][col]==grid[row+1][col]:
+                return True
+    return False
 
 if __name__=='__main__':
 
@@ -219,16 +242,41 @@ if __name__=='__main__':
             if (event.type == pygame.KEYDOWN):
                 if event.key == pygame.K_UP:
                     print("up")
+                    print(np.array(cells))
                     move_up()
+                    print(np.array(cells))
+                    pygame.display.flip()
+                    time.sleep(0.3)
+                    add_cells()
+                    print(np.array(cells))
                 if event.key == pygame.K_RIGHT:
+                    print(np.array(cells))
                     print("right")
                     move_right()
+                    print(np.array(cells))
+                    pygame.display.flip()
+                    time.sleep(0.3)
+                    add_cells()
+                    print(np.array(cells))
                 if event.key == pygame.K_DOWN:
+                    print(np.array(cells))
                     print("down")
                     move_down()
+                    print(np.array(cells))
+                    pygame.display.flip()
+                    time.sleep(0.3)
+                    add_cells()
+                    print(np.array(cells))
                 if event.key == pygame.K_LEFT:
+                    print(np.array(cells))
                     print("left")
                     move_left()
+                    print(np.array(cells))
+                    pygame.display.flip()
+                    time.sleep(0.3)
+                    add_cells()
+                    print(np.array(cells))
+                
         pygame.display.flip()
         clock.tick(30)
     pygame.quit()
